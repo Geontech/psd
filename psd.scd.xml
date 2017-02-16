@@ -1,21 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-This file is protected by Copyright. Please refer to the COPYRIGHT file distributed with this 
-source distribution.
-
-This file is part of REDHAWK Basic Components psd.
-
-REDHAWK Basic Components psd is free software: you can redistribute it and/or modify it under the terms of 
-the GNU General Public License as published by the Free Software Foundation, either 
-version 3 of the License, or (at your option) any later version.
-
-REDHAWK Basic Components psd is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
-without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-PURPOSE.  See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this 
-program.  If not, see http://www.gnu.org/licenses/.
--->
 <!DOCTYPE softwarecomponent PUBLIC "-//JTRS//DTD SCA V2.2.2 SCD//EN" "softwarecomponent.dtd">
 <softwarecomponent>
   <corbaversion>2.2</corbaversion>
@@ -40,6 +23,8 @@ program.  If not, see http://www.gnu.org/licenses/.
         <description>Float output port for the FFT of the input data. The output will be two dimentional data with a subsize of half the FFT size plus one for real input data and equal to the FFT size for complex input data. The FFT output data is always complex.  </description>
         <porttype type="data"/>
       </uses>
+      <provides repid="IDL:BULKIO/dataShort:1.0" providesname="dataShort_in"/>
+      <uses repid="IDL:BULKIO/dataShort:1.0" usesname="psd_dataShort_out"/>
     </ports>
   </componentfeatures>
   <interfaces>
@@ -56,6 +41,10 @@ program.  If not, see http://www.gnu.org/licenses/.
     <interface name="ProvidesPortStatisticsProvider" repid="IDL:BULKIO/ProvidesPortStatisticsProvider:1.0"/>
     <interface name="updateSRI" repid="IDL:BULKIO/updateSRI:1.0"/>
     <interface name="dataFloat" repid="IDL:BULKIO/dataFloat:1.0">
+      <inheritsinterface repid="IDL:BULKIO/ProvidesPortStatisticsProvider:1.0"/>
+      <inheritsinterface repid="IDL:BULKIO/updateSRI:1.0"/>
+    </interface>
+    <interface name="dataShort" repid="IDL:BULKIO/dataShort:1.0">
       <inheritsinterface repid="IDL:BULKIO/ProvidesPortStatisticsProvider:1.0"/>
       <inheritsinterface repid="IDL:BULKIO/updateSRI:1.0"/>
     </interface>

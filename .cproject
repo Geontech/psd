@@ -44,10 +44,11 @@ program.  If not, see http://www.gnu.org/licenses/.
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.2118240011" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.2072196612" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${OssieHome}/include&quot;"/>
+									<listOptionValue builtIn="false" value="/home/Patrick/git/uhd/host/include"/>
+									<listOptionValue builtIn="false" value="&quot;${SdrRoot}/dom/deps/rh/dsp/include&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/include/omnithread"/>
 									<listOptionValue builtIn="false" value="/usr/include/omniORB4"/>
 									<listOptionValue builtIn="false" value="&quot;${SdrRoot}/dom/deps/rh/fftlib/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${SdrRoot}/dom/deps/rh/dsp/include&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1498910566" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -79,7 +80,7 @@ program.  If not, see http://www.gnu.org/licenses/.
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cpp"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cpp_rfnoc"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -153,7 +154,7 @@ program.  If not, see http://www.gnu.org/licenses/.
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cpp"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="cpp_rfnoc"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
