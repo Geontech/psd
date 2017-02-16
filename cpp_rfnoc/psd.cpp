@@ -355,7 +355,7 @@ void psd_i::setRxStreamer(bool enable)
         retrieveRxStream();
 
         // Create the receive buffer
-        this->output.resize(1000*fftSpp);
+        this->output.resize((0.8 * bulkio::Const::MAX_TRANSFER_BYTES / sizeof(std::complex<short>)));
 
         // Create the RX receive thread
         this->rxThread = new GenericThreadedComponent(boost::bind(&psd_i::rxServiceFunction, this));
