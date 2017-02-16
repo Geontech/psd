@@ -58,13 +58,22 @@ void psd_i::constructor()
 
     // Find available sinks and sources
     BlockInfo fftInfo = findAvailableChannel(this->usrp, "FFT");
+    BlockInfo oneInNInfo = findAvailableChannel(this->usrp, "KEEP_ONE_IN_N");
 
-    // Without this, there's no need to continue
+    // Without these, there's no need to continue
     if (not uhd::rfnoc::block_id_t::is_valid_block_id(fftInfo.blockID)) {
         LOG_FATAL(psd_i, "Unable to find RF-NoC block with hint 'FFT'");
         throw CF::LifeCycle::InitializeError();
     } else if (fftInfo.port == size_t(-1)) {
         LOG_FATAL(psd_i, "Unable to find RF-NoC block with hint 'FFT' with available port");
+        throw CF::LifeCycle::InitializeError();
+    }
+
+    if (not uhd::rfnoc::block_id_t::is_valid_block_id(oneInNInfo.blockID)) {
+        LOG_FATAL(psd_i, "Unable to find RF-NoC block with hint 'KEEP_ONE_IN_N'");
+        throw CF::LifeCycle::InitializeError();
+    } else if (oneInNInfo.port == size_t(-1)) {
+        LOG_FATAL(psd_i, "Unable to find RF-NoC block with hint 'KEEP_ONE_IN_N' with available port");
         throw CF::LifeCycle::InitializeError();
     }
 
@@ -79,6 +88,16 @@ void psd_i::constructor()
         LOG_DEBUG(psd_i, "Got the block: " << this->fft->get_block_id());
     }
 
+    this->oneInN = this->usrp->get_block_ctrl<uhd::rfnoc::block_ctrl_base>(oneInNInfo.blockID);
+    this->oneInNPort = oneInNInfo.port;
+
+    if (not this->oneInN.get()) {
+        LOG_FATAL(psd_i, "Unable to retrieve RF-NoC block with ID: " << this->oneInN->get_block_id());
+        throw CF::LifeCycle::InitializeError();
+    } else {
+        LOG_DEBUG(psd_i, "Got the block: " << this->oneInN->get_block_id());
+    }
+
     // Create a graph
     this->graph = this->usrp->create_graph("psd_" + this->_identifier);
 
@@ -87,6 +106,9 @@ void psd_i::constructor()
         LOG_FATAL(psd_i, "Unable to retrieve RF-NoC graph");
         throw CF::LifeCycle::InitializeError();
     }
+
+    // Connect the blocks
+    this->graph->connect(this->fft->get_block_id(), this->fftPort, this->oneInN->get_block_id(), this->oneInNPort);
 
     // Setup based on properties initially
     if (not setFftSize(this->fftSize)) {
@@ -496,13 +518,13 @@ void psd_i::retrieveRxStream()
     uhd::stream_args_t stream_args("sc16", "sc16");
     uhd::device_addr_t streamer_args;
 
-    streamer_args["block_id"] = this->fft->get_block_id();
+    streamer_args["block_id"] = this->oneInN->get_block_id();
 
     // Get the spp from the block
-    this->fftSpp = this->fft->get_args().cast<size_t>("spp", 1024);
+    this->oneInNSpp = this->oneInN->get_args().cast<size_t>("spp", 1024);
 
-    streamer_args["block_port"] = boost::lexical_cast<std::string>(this->fftPort);
-    streamer_args["spp"] = boost::lexical_cast<std::string>(this->fftSpp);
+    streamer_args["block_port"] = boost::lexical_cast<std::string>(this->oneInNPort);
+    streamer_args["spp"] = boost::lexical_cast<std::string>(this->oneInNSpp);
 
     stream_args.args = streamer_args;
 
