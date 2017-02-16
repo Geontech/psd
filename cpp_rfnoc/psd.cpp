@@ -165,11 +165,11 @@ int psd_i::rxServiceFunction()
             return NOOP;
         }
 
-        if (this->output.size() != num_rx_samps) {
+        /*if (this->output.size() != num_rx_samps) {
             LOG_DEBUG(psd_i, "The RX stream is no longer valid, obtaining a new one");
 
             retrieveRxStream();
-        }
+        }*/
 
         LOG_TRACE(psd_i, "RX Thread Requested " << this->output.size() << " samples");
         LOG_TRACE(psd_i, "RX Thread Received " << num_rx_samps << " samples");
