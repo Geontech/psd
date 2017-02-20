@@ -35,6 +35,10 @@ class psd_i : public psd_base, public RFNoC_ComponentInterface
 
         // Methods to be called by the persona, inherited from RFNoC_ComponentInterface
         void setBlockInfoCallback(blockInfoCallback cb);
+        void setNewIncomingConnectionCallback(connectionCallback cb);
+        void setNewOutgoingConnectionCallback(connectionCallback cb);
+        void setRemovedIncomingConnectionCallback(connectionCallback cb);
+        void setRemovedOutgoingConnectionCallback(connectionCallback cb);
         void setRxStreamer(bool enable);
         void setTxStreamer(bool enable);
         void setUsrp(uhd::device3::sptr usrp);
@@ -73,11 +77,16 @@ class psd_i : public psd_base, public RFNoC_ComponentInterface
         blockInfoCallback blockInfoChange;
         bool eob;
         bool expectEob;
+        connectionCallback newIncomingConnectionCallback;
+        connectionCallback newOutgoingConnectionCallback;
+        connectionCallback removedIncomingConnectionCallback;
+        connectionCallback removedOutgoingConnectionCallback;
         std::vector<std::complex<short> > output;
         bool receivedSRI;
         bool rxStreamStarted;
         GenericThreadedComponent *rxThread;
         BULKIO::StreamSRI sri;
+        std::map<std::string, bool> streamMap;
         GenericThreadedComponent *txThread;
 };
 

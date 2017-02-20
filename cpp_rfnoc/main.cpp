@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 }
 
 extern "C" {
-    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::device3::sptr usrp, blockInfoCallback cb, setSetStreamerCallback setSetRxStreamerCb, setSetStreamerCallback setSetTxStreamerCb) {
+    Resource_impl* construct(int argc, char* argv[], Device_impl* parentDevice, uhd::device3::sptr usrp, blockInfoCallback cb, connectionCallback newIncomingConnection, connectionCallback newOutgoingConnection, connectionCallback removedIncomingConnection, connectionCallback removedOutgoingConnection, setSetStreamerCallback setSetRxStreamerCb, setSetStreamerCallback setSetTxStreamerCb) {
 
         struct sigaction sa;
         sa.sa_handler = signal_catcher;
@@ -45,6 +45,10 @@ extern "C" {
         //         resourcePtr->setSharedAPI(sharedAPI);
         //resourcePtr->setParentDevice(parentDevice);
         resourcePtr->setBlockInfoCallback(cb);
+        resourcePtr->setNewIncomingConnectionCallback(newIncomingConnection);
+        resourcePtr->setNewOutgoingConnectionCallback(newOutgoingConnection);
+        resourcePtr->setRemovedIncomingConnectionCallback(removedIncomingConnection);
+        resourcePtr->setRemovedOutgoingConnectionCallback(removedOutgoingConnection);
         resourcePtr->setUsrp(usrp);
         setSetRxStreamerCb(resourcePtr->_identifier, boost::bind(&psd_i::setRxStreamer, resourcePtr, _1));
         setSetTxStreamerCb(resourcePtr->_identifier, boost::bind(&psd_i::setTxStreamer, resourcePtr, _1));

@@ -331,6 +331,34 @@ void psd_i::setBlockInfoCallback(blockInfoCallback cb)
     this->blockInfoChange = cb;
 }
 
+void psd_i::setNewIncomingConnectionCallback(connectionCallback cb)
+{
+    LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
+
+    this->newIncomingConnectionCallback = cb;
+}
+
+void psd_i::setNewOutgoingConnectionCallback(connectionCallback cb)
+{
+    LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
+
+    this->newOutgoingConnectionCallback = cb;
+}
+
+void psd_i::setRemovedIncomingConnectionCallback(connectionCallback cb)
+{
+    LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
+
+    this->removedIncomingConnectionCallback = cb;
+}
+
+void psd_i::setRemovedOutgoingConnectionCallback(connectionCallback cb)
+{
+    LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
+
+    this->removedOutgoingConnectionCallback = cb;
+}
+
 /*
  * A method which allows the persona to set this component as an RX streamer.
  * This means the component should retrieve the data from block and then send
@@ -476,6 +504,21 @@ void psd_i::streamChanged(bulkio::InShortPort::StreamType stream)
 {
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
+    std::map<std::string, bool>::iterator it = this->streamMap.find(stream.streamID());
+
+    bool newIncomingConnection = (it == this->streamMap.end());
+    bool removedIncomingConnection =(it != this->streamMap.end() and stream.eos());
+
+    if (newIncomingConnection) {
+        if (this->newIncomingConnectionCallback) {
+            this->newIncomingConnectionCallback(stream.streamID());
+        }
+    } else if (removedIncomingConnection) {
+        if (this->removedOutgoingConnectionCallback) {
+            this->removedOutgoingConnectionCallback(stream.streamID());
+        }
+    }
+
     sriChanged(stream.sri());
 }
 
@@ -483,14 +526,18 @@ void psd_i::newConnection(const char *connectionID)
 {
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
-    LOG_DEBUG(psd_i, "************** " << __PRETTY_FUNCTION__ << " **************");
+    if (this->newOutgoingConnectionCallback) {
+        this->newOutgoingConnectionCallback(connectionID);
+    }
 }
 
 void psd_i::newDisconnection(const char *connectionID)
 {
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
-    LOG_DEBUG(psd_i, "************** " << __PRETTY_FUNCTION__ << " **************");
+    if (this->removedOutgoingConnectionCallback) {
+        this->removedOutgoingConnectionCallback(connectionID);
+    }
 }
 
 void psd_i::retrieveRxStream()
