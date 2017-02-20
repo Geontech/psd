@@ -50,5 +50,8 @@ This component provides both the real-valued PSD and the complex FFT outputs.</d
     <humanlanguage name="EN"/>
     <os name="Linux"/>
     <processor name="RF-NoC-Default"/>
+    <dependency type="allocation">
+      <propertyref refid="block_allocation" value="FFT"/>
+    </dependency>
   </implementation>
 </softpkg>
