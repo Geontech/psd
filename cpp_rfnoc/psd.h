@@ -47,6 +47,8 @@ class psd_i : public psd_base, public RFNoC_ComponentInterface
         void streamChanged(bulkio::InShortPort::StreamType stream);
 
     private:
+        void newConnection(const char *connectionID);
+        void newDisconnection(const char *connectionID);
         void retrieveRxStream();
         void retrieveTxStream();
         bool setFftSize(const CORBA::ULong &newFftSize);

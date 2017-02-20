@@ -109,6 +109,10 @@ void psd_i::constructor()
 
     // Add an SRI change listener
     this->dataShort_in->addStreamListener(this, &psd_i::streamChanged);
+
+    // Add a stream listener
+    this->psd_dataShort_out->setNewConnectListener(this, &psd_i::newConnection);
+    this->psd_dataShort_out->setNewDisconnectListener(this, &psd_i::newDisconnection);
 }
 
 // Service functions for RX and TX
@@ -473,6 +477,20 @@ void psd_i::streamChanged(bulkio::InShortPort::StreamType stream)
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
     sriChanged(stream.sri());
+}
+
+void psd_i::newConnection(const char *connectionID)
+{
+    LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
+
+    LOG_DEBUG(psd_i, "************** " << __PRETTY_FUNCTION__ << " **************");
+}
+
+void psd_i::newDisconnection(const char *connectionID)
+{
+    LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
+
+    LOG_DEBUG(psd_i, "************** " << __PRETTY_FUNCTION__ << " **************");
 }
 
 void psd_i::retrieveRxStream()
