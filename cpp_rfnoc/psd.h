@@ -61,9 +61,6 @@ class psd_i : public psd_base, public RFNoC_ComponentInterface
         size_t fftPort;
         size_t fftSpp;
         uhd::rfnoc::graph::sptr graph;
-        uhd::rfnoc::block_ctrl_base::sptr oneInN;
-        size_t oneInNPort;
-        size_t oneInNSpp;
         uhd::device3::sptr usrp;
 
         // UHD Members
