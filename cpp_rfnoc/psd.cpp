@@ -621,7 +621,7 @@ void psd_i::setFftReset()
     try {
         uhd::device_addr_t args;
 
-        args["reset"] = 1;
+        args["reset"] = boost::lexical_cast<std::string>(1);
 
         this->fft->set_args(args, this->fftPort);
     } catch(uhd::value_error &e) {
