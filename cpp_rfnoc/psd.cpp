@@ -614,6 +614,23 @@ void psd_i::retrieveTxStream()
     }
 }
 
+void psd_i::setFftReset()
+{
+    LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
+
+    try {
+        uhd::device_addr_t args;
+
+        args["reset"] = 1;
+
+        this->fft->set_args(args, this->fftPort);
+    } catch(uhd::value_error &e) {
+        LOG_ERROR(psd_i, "Error while setting reset on FFT RF-NoC block: " << e.what());
+    } catch(...) {
+        LOG_ERROR(psd_i, "Unknown error occurred while setting reset on FFT RF-NoC block");
+    }
+}
+
 // Set the fft size on the FFT RF-NoC block
 bool psd_i::setFftSize(const CORBA::ULong &newFftSize)
 {
@@ -632,6 +649,8 @@ bool psd_i::setFftSize(const CORBA::ULong &newFftSize)
         LOG_ERROR(psd_i, "Unknown error occurred while setting spp on FFT RF-NoC block");
         return false;
     }
+
+    setFftReset();
 
     return true;
 }
@@ -653,6 +672,8 @@ bool psd_i::setMagnitudeOut(const std::string &newMagnitudeOut)
         LOG_ERROR(psd_i, "Unknown error occurred while setting magnitude_out on FFT RF-NoC block");
         return false;
     }
+
+    setFftReset();
 
     return true;
 }
