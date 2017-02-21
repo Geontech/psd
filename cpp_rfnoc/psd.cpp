@@ -160,6 +160,8 @@ int psd_i::rxServiceFunction()
             LOG_WARN(psd_i, "Overflow while streaming");
         } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
             LOG_WARN(psd_i, md.strerror());
+            this->rxStreamStarted = false;
+            startRxStream();
             return NOOP;
         }
 
