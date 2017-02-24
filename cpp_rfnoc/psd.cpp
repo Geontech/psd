@@ -513,11 +513,11 @@ void psd_i::streamChanged(bulkio::InShortPort::StreamType stream)
 
     if (newIncomingConnection) {
         if (this->newIncomingConnectionCallback) {
-            this->newIncomingConnectionCallback(stream.streamID());
+            this->newIncomingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
     } else if (removedIncomingConnection) {
         if (this->removedOutgoingConnectionCallback) {
-            this->removedOutgoingConnectionCallback(stream.streamID());
+            this->removedOutgoingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
     }
 
@@ -529,7 +529,9 @@ void psd_i::newConnection(const char *connectionID)
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
     if (this->newOutgoingConnectionCallback) {
-        this->newOutgoingConnectionCallback(connectionID);
+        BULKIO::UsesPortStatisticsProvider_ptr port = BULKIO::UsesPortStatisticsProvider::_narrow(this->getPort(this->psd_dataShort_out->getName().c_str()));
+
+        this->newOutgoingConnectionCallback(connectionID, port->_hash(HASH_SIZE));
     }
 }
 
@@ -538,7 +540,9 @@ void psd_i::newDisconnection(const char *connectionID)
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
     if (this->removedOutgoingConnectionCallback) {
-        this->removedOutgoingConnectionCallback(connectionID);
+        BULKIO::UsesPortStatisticsProvider_ptr port = BULKIO::UsesPortStatisticsProvider::_narrow(this->getPort(this->psd_dataShort_out->getName().c_str()));
+
+        this->removedOutgoingConnectionCallback(connectionID, port->_hash(HASH_SIZE));
     }
 }
 

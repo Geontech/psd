@@ -36,7 +36,7 @@ typedef boost::function<void(const std::string &componentID, const std::vector<B
  * component inform the persona of incoming/outgoing connections being added or
  * removed
  */
-typedef boost::function<void(const std::string &ID)> connectionCallback;
+typedef boost::function<void(const std::string &ID, const CORBA::ULong &hash)> connectionCallback;
 
 /*
  * An abstract base class to be implemented by an RF-NoC component designer.
