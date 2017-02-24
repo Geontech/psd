@@ -35,7 +35,7 @@ psd_i::~psd_i()
 
     // Reset the RF-NoC blocks
     if (this->fft.get()) {
-        this->fft->clear(this->fftPort);
+        this->fft->clear();
     }
 
     // Release the threads if necessary
@@ -73,10 +73,10 @@ void psd_i::constructor()
     this->fftPort = fftInfo.port;
 
     if (not this->fft.get()) {
-        LOG_FATAL(psd_i, "Unable to retrieve RF-NoC block with ID: " << this->fft->get_block_id());
+        LOG_FATAL(psd_i, "Unable to retrieve RF-NoC block with ID: " << this->fft->unique_id());
         throw CF::LifeCycle::InitializeError();
     } else {
-        LOG_DEBUG(psd_i, "Got the block: " << this->fft->get_block_id());
+        LOG_DEBUG(psd_i, "Got the block: " << this->fft->unique_id());
     }
 
     // Create a graph
@@ -561,7 +561,7 @@ void psd_i::retrieveRxStream()
     uhd::stream_args_t stream_args("sc16", "sc16");
     uhd::device_addr_t streamer_args;
 
-    streamer_args["block_id"] = this->fft->get_block_id();
+    streamer_args["block_id"] = this->fft->unique_id();
 
     // Get the spp from the block
     this->fftSpp = this->fft->get_args().cast<size_t>("spp", 512);
@@ -598,7 +598,7 @@ void psd_i::retrieveTxStream()
     uhd::stream_args_t stream_args("sc16", "sc16");
     uhd::device_addr_t streamer_args;
 
-    streamer_args["block_id"] = this->fft->get_block_id();
+    streamer_args["block_id"] = this->fft->unique_id();
 
     // Get the spp from the block
     this->fftSpp = this->fft->get_args().cast<size_t>("spp", 512);
