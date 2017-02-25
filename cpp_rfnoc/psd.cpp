@@ -83,13 +83,13 @@ void psd_i::constructor()
     // Not necessary for this component
 
     // Setup based on properties initially
-    if (not setFftSize(this->fftSize)) {
-        LOG_FATAL(psd_i, "Unable to set FFT size with default value");
+    if (not setMagnitudeOut("MAGNITUDE_SQUARED")) {
+        LOG_FATAL(psd_i, "Unable to set FFT magnitude_out with default value");
         throw CF::LifeCycle::InitializeError();
     }
 
-    if (not setMagnitudeOut("MAGNITUDE_SQUARED")) {
-        LOG_FATAL(psd_i, "Unable to set FFT magnitude_out with default value");
+    if (not setFftSize(this->fftSize)) {
+        LOG_FATAL(psd_i, "Unable to set FFT size with default value");
         throw CF::LifeCycle::InitializeError();
     }
 
@@ -624,7 +624,7 @@ void psd_i::setFftReset()
 {
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
-    try {
+    /*try {
         uhd::device_addr_t args;
 
         args["reset"] = boost::lexical_cast<std::string>(1);
@@ -634,7 +634,7 @@ void psd_i::setFftReset()
         LOG_ERROR(psd_i, "Error while setting reset on FFT RF-NoC block: " << e.what());
     } catch(...) {
         LOG_ERROR(psd_i, "Unknown error occurred while setting reset on FFT RF-NoC block");
-    }
+    }*/
 }
 
 // Set the fft size on the FFT RF-NoC block
