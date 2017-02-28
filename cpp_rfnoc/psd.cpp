@@ -83,7 +83,7 @@ void psd_i::constructor()
     // Not necessary for this component
 
     // Setup based on properties initially
-    if (not setMagnitudeOut("MAGNITUDE_SQUARED")) {
+    if (not setMagnitudeOut("COMPLEX")) {
         LOG_FATAL(psd_i, "Unable to set FFT magnitude_out with default value");
         throw CF::LifeCycle::InitializeError();
     }
@@ -123,26 +123,7 @@ int psd_i::rxServiceFunction()
         // Don't bother doing anything until the SRI has been received
         if (not this->receivedSRI) {
             LOG_DEBUG(psd_i, "RX Thread active but no SRI has been received");
-
-            if (not this->txThread) {
-                bulkio::InShortPort::DataTransferType *packet = this->dataShort_in->getPacket(bulkio::Const::NON_BLOCKING);
-
-                if (not packet) {
-                    return NOOP;
-                }
-
-                bool updated = packet->sriChanged;
-
-                if (updated) {
-                    sriChanged(packet->SRI);
-                }
-
-                delete packet;
-
-                if (not updated) {
-                    return NOOP;
-                }
-            }
+            return NOOP;
         }
 
         // Recv from the block
