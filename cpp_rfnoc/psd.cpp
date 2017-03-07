@@ -33,11 +33,6 @@ psd_i::~psd_i()
     // Stop streaming
     stopRxStream();
 
-    // Reset the RF-NoC blocks
-    if (this->fft.get()) {
-        this->fft->clear();
-    }
-
     // Release the threads if necessary
     if (this->rxThread) {
         this->rxThread->stop();
@@ -49,7 +44,10 @@ psd_i::~psd_i()
         delete this->txThread;
     }
 
-    LOG_INFO(psd_i, "END OF DESTRUCTOR");
+    // Reset the RF-NoC blocks
+    if (this->fft.get()) {
+        this->fft->clear();
+    }
 }
 
 void psd_i::constructor()
@@ -83,7 +81,7 @@ void psd_i::constructor()
     // Not necessary for this component
 
     // Setup based on properties initially
-    if (not setMagnitudeOut("COMPLEX")) {
+    if (not setMagnitudeOut("MAGNITUDE")) {
         LOG_FATAL(psd_i, "Unable to set FFT magnitude_out with default value");
         throw CF::LifeCycle::InitializeError();
     }
@@ -129,31 +127,33 @@ int psd_i::rxServiceFunction()
         // Recv from the block
         uhd::rx_metadata_t md;
 
-        LOG_TRACE(psd_i, "Calling recv on the rx_stream");
+        size_t samplesRead = 0;
+        size_t samplesToRead = this->output.size();
 
-        size_t num_rx_samps = this->rxStream->recv(&this->output.front(), this->output.size(), md, 3.0);
+        while (samplesRead < this->output.size()) {
+            LOG_DEBUG(psd_i, "Calling recv on the rx_stream");
 
-        // Check the meta data for error codes
-        if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
-            LOG_ERROR(psd_i, "Timeout while streaming");
-            return NOOP;
-        } else if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_OVERFLOW) {
-            LOG_WARN(psd_i, "Overflow while streaming");
-        } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
-            LOG_WARN(psd_i, md.strerror());
-            this->rxStreamStarted = false;
-            startRxStream();
-            return NOOP;
+            size_t num_rx_samps = this->rxStream->recv(&output.front() + samplesRead, samplesToRead, md, 1.0);
+
+            // Check the meta data for error codes
+            if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_TIMEOUT) {
+                LOG_ERROR(psd_i, "Timeout while streaming");
+                return NOOP;
+            } else if (md.error_code == uhd::rx_metadata_t::ERROR_CODE_OVERFLOW) {
+                LOG_WARN(psd_i, "Overflow while streaming");
+            } else if (md.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE) {
+                LOG_WARN(psd_i, md.strerror());
+                this->rxStreamStarted = false;
+                startRxStream();
+                return NOOP;
+            }
+
+            LOG_DEBUG(psd_i, "RX Thread Requested " << samplesToRead << " samples");
+            LOG_DEBUG(psd_i, "RX Thread Received " << num_rx_samps << " samples");
+
+            samplesRead += num_rx_samps;
+            samplesToRead -= num_rx_samps;
         }
-
-        /*if (this->output.size() != num_rx_samps) {
-            LOG_DEBUG(psd_i, "The RX stream is no longer valid, obtaining a new one");
-
-            retrieveRxStream();
-        }*/
-
-        LOG_TRACE(psd_i, "RX Thread Requested " << this->output.size() << " samples");
-        LOG_TRACE(psd_i, "RX Thread Received " << num_rx_samps << " samples");
 
         // Get the time stamps from the meta data
         BULKIO::PrecisionUTCTime rxTime;
@@ -215,15 +215,18 @@ int psd_i::txServiceFunction()
         }
 
         // Send the data
-        size_t num_tx_samps = this->txStream->send(block, blockSize, md);
+        size_t samplesSent = 0;
+        size_t samplesToSend = blockSize;
 
-        if (blockSize != 0 and num_tx_samps == 0) {
-            LOG_DEBUG(psd_i, "The TX stream is no longer valid, obtaining a new one");
+        while (samplesToSend != 0) {
+            // Send the data
+            size_t num_tx_samps = this->txStream->send(block + samplesSent, samplesToSend, md, 1);
 
-            retrieveTxStream();
+            samplesSent += num_tx_samps;
+            samplesToSend -= num_tx_samps;
+
+            LOG_DEBUG(psd_i, "TX Thread Sent " << num_tx_samps << " samples");
         }
-
-        LOG_TRACE(psd_i, "TX Thread Sent " << num_tx_samps << " samples");
 
         // On EOS, forward to the RF-NoC Block
         if (packet->EOS) {
@@ -361,7 +364,10 @@ void psd_i::setRxStreamer(bool enable)
         LOG_DEBUG(psd_i, "Attempting to set RX streamer");
 
         // Get the RX stream
-        retrieveRxStream();
+        if (not retrieveRxStream()) {
+            LOG_WARN(psd_i, "Failed to retrieve RX stream");
+            return;
+        }
 
         // Create the receive buffer
         this->output.resize((0.8 * bulkio::Const::MAX_TRANSFER_BYTES / sizeof(std::complex<short>)));
@@ -417,7 +423,10 @@ void psd_i::setTxStreamer(bool enable)
         LOG_DEBUG(psd_i, "Attempting to set TX streamer");
 
         // Get the TX stream
-        retrieveTxStream();
+        if (not retrieveTxStream()) {
+            LOG_WARN(psd_i, "Failed to retrieve TX stream");
+            return;
+        }
 
         // Create the TX transmit thread
         this->txThread = new GenericThreadedComponent(boost::bind(&psd_i::txServiceFunction, this));
@@ -493,13 +502,21 @@ void psd_i::streamChanged(bulkio::InShortPort::StreamType stream)
     bool removedIncomingConnection =(it != this->streamMap.end() and stream.eos());
 
     if (newIncomingConnection) {
+        LOG_DEBUG(psd_i, "New incoming connection");
+
         if (this->newIncomingConnectionCallback) {
             this->newIncomingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
+
+        this->streamMap[stream.streamID()] = true;
     } else if (removedIncomingConnection) {
+        LOG_DEBUG(psd_i, "Removed incoming connection");
+
         if (this->removedOutgoingConnectionCallback) {
             this->removedOutgoingConnectionCallback(stream.streamID(), this->dataShort_in->_this()->_hash(HASH_SIZE));
         }
+
+        this->streamMap.erase(it);
     }
 
     sriChanged(stream.sri());
@@ -527,7 +544,7 @@ void psd_i::newDisconnection(const char *connectionID)
     }
 }
 
-void psd_i::retrieveRxStream()
+bool psd_i::retrieveRxStream()
 {
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
@@ -559,12 +576,16 @@ void psd_i::retrieveRxStream()
         this->rxStream = this->usrp->get_rx_stream(stream_args);
     } catch(uhd::runtime_error &e) {
         LOG_ERROR(psd_i, "Failed to retrieve RX stream: " << e.what());
+        return false;
     } catch(...) {
         LOG_ERROR(psd_i, "Unexpected error occurred while retrieving RX stream");
+        return false;
     }
+
+    return true;
 }
 
-void psd_i::retrieveTxStream()
+bool psd_i::retrieveTxStream()
 {
     LOG_TRACE(psd_i, __PRETTY_FUNCTION__);
 
@@ -596,9 +617,13 @@ void psd_i::retrieveTxStream()
         this->txStream = this->usrp->get_tx_stream(stream_args);
     } catch(uhd::runtime_error &e) {
         LOG_ERROR(psd_i, "Failed to retrieve TX stream: " << e.what());
+        return false;
     } catch(...) {
         LOG_ERROR(psd_i, "Unexpected error occurred while retrieving TX stream");
+        return false;
     }
+
+    return true;
 }
 
 void psd_i::setFftReset()
@@ -671,6 +696,20 @@ void psd_i::sriChanged(const BULKIO::StreamSRI &newSRI)
 
     this->sri = newSRI;
 
+    this->sri.xdelta = 1.0 / (newSRI.xdelta * this->fftSize);
+
+    double ifStart = -((this->fftSize / 2 - 1) * this->sri.xdelta);
+
+    // TODO: Check for CHAN_RF/COL_RF
+    this->sri.xstart = ifStart;
+
+    this->sri.subsize = this->fftSize;
+
+    this->sri.ydelta = newSRI.xdelta * this->fftSize;
+    this->sri.yunits = BULKIO::UNITS_TIME;
+    this->sri.xunits = BULKIO::UNITS_FREQUENCY;
+    this->sri.mode = 1;
+
     this->psd_dataShort_out->pushSRI(this->sri);
 
     this->receivedSRI = true;
@@ -704,6 +743,18 @@ void psd_i::stopRxStream()
         this->rxStream->issue_stream_cmd(stream_cmd);
 
         this->rxStreamStarted = false;
+
+        // Run recv until nothing is left
+        uhd::rx_metadata_t md;
+        int num_post_samps = 0;
+
+        LOG_DEBUG(psd_i, "Emptying receive queue...");
+
+        do {
+            num_post_samps = this->rxStream->recv(&this->output.front(), this->output.size(), md, 1.0);
+        } while(num_post_samps and md.error_code == uhd::rx_metadata_t::ERROR_CODE_NONE);
+
+        LOG_DEBUG(psd_i, "Emptied receive queue");
     }
 }
 
