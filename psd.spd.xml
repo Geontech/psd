@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE softpkg PUBLIC "-//JTRS//DTD SCA V2.2.2 SPD//EN" "softpkg.dtd">
-<softpkg id="DCE:c77d5f12-16d3-11e5-a1b5-3417ebc4aab5" name="rh.psd" type="2.0.2" version="2.0.2">
+<softpkg id="DCE:c77d5f12-16d3-11e5-a1b5-3417ebc4aab5" name="rh.psd" type="2.0.9" version="2.0.2">
   <title></title>
   <author>
     <name>REDHAWK</name>
@@ -50,5 +50,10 @@ This component provides both the real-valued PSD and the complex FFT outputs.</d
     <humanlanguage name="EN"/>
     <os name="Linux"/>
     <processor name="RF-NoC-Default"/>
+    <dependency type="other">
+      <softpkgref>
+        <localfile name="/deps/RFNoC_RH/RFNoC_RH.spd.xml"/>
+      </softpkgref>
+    </dependency>
   </implementation>
 </softpkg>

@@ -27,6 +27,8 @@ BuildRequires:  rh.dsp-devel
 Requires:       rh.dsp
 BuildRequires:  rh.fftlib-devel
 Requires:       rh.fftlib
+BuildRequires:  RFNoC_RH-devel
+Requires:       RFNoC_RH
 
 # Interface requirements
 BuildRequires:  bulkioInterfaces >= 2.0
@@ -80,7 +82,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,redhawk,redhawk,-)
-%dir %{_prefix}/dom/components/rh/psd
+%dir %{_sdrroot}/dom/components/rh
+%dir %{_sdrroot}/dom/components/rh/psd
 %{_prefix}/dom/components/rh/psd/psd.scd.xml
 %{_prefix}/dom/components/rh/psd/psd.prf.xml
 %{_prefix}/dom/components/rh/psd/psd.spd.xml

@@ -1,20 +1,3 @@
-# This file is protected by Copyright. Please refer to the COPYRIGHT file distributed with this 
-# source distribution.
-#
-# This file is part of REDHAWK Basic Components psd.
-# 
-# REDHAWK Basic Components psd is free software: you can redistribute it and/or modify it under the terms of 
-# the GNU General Public License as published by the Free Software Foundation, either 
-# version 3 of the License, or (at your option) any later version.
-# 
-# REDHAWK Basic Components psd is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-# PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along with this 
-# program.  If not, see http://www.gnu.org/licenses/.
-#
-
 AC_INIT(rh.psd, 2.0.2)
 AM_INIT_AUTOMAKE([nostdinc foreign])
 AC_CONFIG_MACRO_DIR([m4])
@@ -32,8 +15,8 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 # Dependencies
 PKG_CHECK_MODULES([PROJECTDEPS], [ossie >= 2.0 omniORB4 >= 4.1.0])
 PKG_CHECK_MODULES([INTERFACEDEPS], [bulkio >= 2.0])
-RH_SOFTPKG_CXX([/deps/rh/dsp/dsp.spd.xml],[cpp],[2.0])
-RH_SOFTPKG_CXX([/deps/rh/fftlib/fftlib.spd.xml],[cpp],[2.0])
+RH_SOFTPKG_CXX([/deps/rh/dsp/dsp.spd.xml],[cpp])
+RH_SOFTPKG_CXX([/deps/rh/fftlib/fftlib.spd.xml],[cpp])
 OSSIE_ENABLE_LOG4CXX
 AX_BOOST_BASE([1.41])
 AX_BOOST_SYSTEM

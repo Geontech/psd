@@ -1,4 +1,4 @@
-cpp/psd
+cpp/.libs
 .deps/
 Makefile
 Makefile.in
@@ -15,5 +15,10 @@ install-sh
 ltmain.sh
 missing
 *.o
+.libs
+*.la
+*.lo
+libtool
+m4
 tests/*.xml
 tests/*.pyc
